@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Thread</title>
+	<style type="text/css"> </style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+		<script src="bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+    <link href="custom.css" rel="stylesheet">
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+	  <div class="container-fluid">
+	    <!-- Brand and toggle get grouped for better mobile display -->
+	    <div class="navbar-header">
+	      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+	        <span class="sr-only">Toggle navigation</span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	      <a href="#" >
+	        <img src="logo1.png" style="-webkit-filter: drop-shadow(5px 5px 5px #222); filter: drop-shadow(5px 5px 5px #222);" width=173 height=72>
+	      </a>
+	    </div>
+
+	    <!-- Collect the nav links, forms, and other content for toggling -->
+	    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+
+	      <ul class="nav navbar-nav navbar-right">
+	        <li><a href="#" class="thread">My Threads</a></li>
+	        <li class="dropdown">
+	          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"></span></a>
+	          <ul class="dropdown-menu">
+	            <li><a href="Tread.html">Sign In</a></li>
+	            <li role="separator" class="divider"></li>
+	            <li><a href="#">Separated link</a></li>
+	          </ul>
+	        </li>
+	      </ul>
+	    </div><!-- /.navbar-collapse -->
+	  </div><!-- /.container-fluid -->
+	</nav>
+
+
+	<div id="content" class="container main">
+		<form id = "myform" >
+		  Email: <br><input id = "email" type="text" name="email"><br>
+		  Password: <br><input id = "password" type="text" name="password"><br>
+		  <input id = "button" type="button" value="Submit">
+		</form>
+	</div>
+	<div id = "error"></div>
+	<footer class="footer" >
+
+        <p class="text-muted">Copyright &#169 Thread</p>
+
+  </footer>
+</body>
+	<script>
+		$('#button').click(function(){
+			var email = $('#email').val();
+			var password = $('#password').val();
+			console.log("username:"+JSON.stringify(email));
+			if(email === "" && password === ""){
+				$('#error').append("<b>Errors happens </b>");
+			}else{
+				console.log("bbaa");
+				var request = $.ajax({
+					url: "http://localhost:3000/login",
+					method : "POST",
+					data: {'email': email, 'password': password},
+					success: function(responseData, textStatus, jqXHR) {
+				        //var value = responseData;
+								console.log("success" );
+								//console.log(JSON.stringify(value));
+				    },
+				    error: function (responseData, textStatus, errorThrown) {
+				        alert('POST failed.');
+				    }
+				});
+				request.done(function(data, textStatus, jqXHR){
+					console.log("done !!!");
+					//console.log("data" + JSON.stringify(data.data._id));
+					//data"Thu, 28 Jul 2016 23:59:39 GMT"
+					console.log("data" + JSON.stringify(data));
+					var User_created_date = JSON.stringify(data.data.usr_created);
+					console.log("new format date" + Date.parse(User_created_date));
+					var year = new Date(data.data.usr_created).getYear()+1900;
+					var month = new Date(data.data.usr_created).getMonth()+1;
+					var day = new Date(data.data.usr_created).getDate();
+					console.log("" +(year+1900) +" "+month+" "+day);
+					var newUrl = "http://localhost:3000/feeds?year="+ year+"&month="+ month+"&day="+day+"&hour=00&min=00&sec=00";
+					ajaxCall2(newUrl);
+					//window.location.href = newUrl;
+					//window.location.href = '/test.html';
+					//http://localhost:3000/feeds?year=2016&month=08&day=01&hour=00&min=00&sec=00
+
+				});
+				request.fail(function(){
+					console.log("oops!!!");
+				});
+			}
+
+
+
+		});
+
+		function ajaxCall2(newUrl){
+			var request = $.ajax({
+				url: newUrl,
+				method : "GET",
+				//data: {'email': email, 'password': password},
+				success: function(responseData, textStatus, jqXHR) {
+							console.log("success" );
+							//console.log(JSON.stringify(value));
+					},
+					error: function (responseData, textStatus, errorThrown) {
+							alert('POST failed.');
+					}
+			});
+			request.done(function(data, textStatus, jqXHR){
+				//console.log("done !!!" + data);
+				//console.log("dataaaa : " + JSON.stringify(data));
+				$('#content').html("");
+				for(i = 0; i < data.data.length; i++){
+						var projectName = data.data[i].proj_name;
+						for(j =0; j <  data.data[i].proj_posts.length; j++){
+							console.log("fileKey"+data.data[i].proj_posts[j].post_media[0].post_media_url);
+							//var imageurl ="https://thread-app.herokuapp.com/s3Proxy/?fileKey="+data.data[i].proj_posts[j].post_media[0].post_media_url;
+							var imageurl = "http://7-themes.com/data_images/out/19/6832130-jun-ji-hyun.jpg";
+							var timestamp =data.data[i].proj_posts[j].post_created;
+							$('#content').append(
+								'<div class = "row top-buffer">'+
+									'<div class = "col-md-5">'+
+									'<img src="girl2.png"  alt="post">'+
+									'</div>'+
+									'<div class = "col-md-7">'+
+											'<h1><li><a href="#">userId '+data.data[i].proj_posts[j].post_usr_id +'</a></li></h1>'+
+											'<h3><li><a href="#">proj/threadId '+data.data[i]._id + '</a></li></h3>'+
+											'<div>'+timestamp.substring(5,7)+"/"+timestamp.substring(8,10)+"/"+timestamp.substring(0,4)+" "+timestamp.substring(11,16)+'</div>'+
+											'<p>'+data.data[i].proj_posts[j].post_story + '.</p>'+
+									'</div>'+
+								'</div>');
+
+						}
+
+
+				}
+				//http://localhost:3000/feeds?year=2016&month=08&day=01&hour=00&min=00&sec=00
+
+			});
+			request.fail(function(){
+				console.log("oops!!! ajaxcall2");
+			});
+		};
+
+	</script>
+
+</html>
